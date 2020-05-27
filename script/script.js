@@ -1,9 +1,62 @@
-// меню
+const IMG_URL = 'https://image.tmdb.org/t/p/w185_and_h278_bestv2';
+const API_KEY = '57716a2cbd2bb762f9fd5296076abcff'
 
 const leftMenu = document.querySelector('.left-menu');
 const hamburger = document.querySelector('.hamburger');
 const tvShowsList = document.querySelector('.tv-shows__list');
 const modal = document.querySelector('.modal');
+
+const DBService = class {
+  getData = async (url) => {
+    const res = await fetch(url);
+    if (res.ok) {
+      return res.json();
+    } else {
+      throw new Error(`Не удалось получить данные по адресу ${url}`)
+    }
+  }
+  getTestData = () => {
+    return this.getData('test.json')
+  }
+}
+
+const renderCard = (response) => {
+  console.log(response);
+  tvShowsList.textContent = '';
+
+  response.results.forEach(item => {
+
+    const {
+      backdrop_path: backdrop,
+      name: title,
+      poster_path: poster,
+      vote_average: vote
+    } = item;
+
+    const posterIMG = poster ? IMG_URL + poster : 'img/no-poster.jpg';
+    const backdropIMG = backdrop ? IMG_URL + backdrop : 'img/no-poster.jpg';
+
+    const voteElem = vote ? `<span class="tv-card__vote">${vote}</span>` : '';
+
+    const card = document.createElement('li');
+    card.classList.add('tv-shows__item');
+
+    card.innerHTML = `
+    <a href="#" class="tv-card">
+      ${voteElem}
+      <img class="tv-card__img"
+      src="${posterIMG}"
+      data-backdrop="${backdropIMG}"
+      alt="${title}">
+      <h4 class="tv-card__head">${title}</h4>
+    </a>
+    `;
+
+    tvShowsList.append(card);
+  });
+}
+
+new DBService().getTestData().then(renderCard)
 
 // открытие, закрытие меню
 
@@ -31,6 +84,7 @@ leftMenu.addEventListener('click', (event) => {
 })
 
 // смена карточки 
+
 const changeImage = event => {
   const card = event.target.closest('.tv-shows__item')
   if (card) {
@@ -44,14 +98,6 @@ const changeImage = event => {
 }
 tvShowsList.addEventListener('mouseover', changeImage)
 tvShowsList.addEventListener('mouseout', changeImage)
-// document.querySelectorAll('.tv-card__img').forEach(item => {
-//   item.addEventListener('mouseenter', () => {
-// src = item.src
-// debugger
-//   item.src = item.dataset.backdrop
-// })
-// item.addEventListener('mouseleave', () => )
-// })
 
 // открытие модального окна
 
