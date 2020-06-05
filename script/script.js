@@ -19,6 +19,8 @@ const tvShowsHead = document.querySelector('.tv-shows__head');
 const posterWrapper = document.querySelector('.poster__wrapper');
 const modalContent = document.querySelector('.modal__content');
 const pagination = document.querySelector('.pagination');
+const trailer = document.querySelector('#trailer');
+const trailerHead = document.querySelector('#trailer-head');
 
 const loading = document.createElement('div');
 loading.className = 'loading';
@@ -69,6 +71,10 @@ const DBService = class {
   getToday = () => {
     return this.getData(`${this.SERVER}/tv/airing_today?api_key=${this.API_KEY}&language=ru-RU`)
   }
+  getVideo = (id) => {
+    return this.getData(`${this.SERVER}/tv/${id}/videos?api_key=${this.API_KEY}&language=ru-RU`)
+  }
+
 
 }
 
@@ -173,7 +179,6 @@ document.addEventListener('click', (event) => {
 leftMenu.addEventListener('click', (event) => {
   event.preventDefault();
   const target = event.target;
-  console.log(target.textContent);
   const dropdown = target.closest('.dropdown');
   if (dropdown) {
     dropdown.classList.toggle('active')
@@ -261,6 +266,27 @@ tvShowsList.addEventListener('click', (event) => {
         rating.textContent = data.vote_average;
         modalLink.href = data.homepage;
         description.textContent = data.overview;
+        return data.id;
+      })
+      .then(dbService.getVideo)
+      .then(data => {
+        trailer.textContent = '';
+        if (data.results.length) {
+          trailerHead.classList.remove('hide')
+          data.results.forEach((item) => {
+            const treilerItem = document.createElement('li')
+            treilerItem.innerHTML = `
+          <iframe
+            width="400"
+            height="300"
+            src="https://www.youtube.com/embed/${item.key}" frameborder="0"
+            allowfullscreen>
+          </iframe>
+          <h4 style="padding-bottom: 30px">${item.name}</h4>
+        `;
+            trailer.append(treilerItem)
+          })
+        }
       })
       .then(() => {
         document.body.style.overflow = 'hidden'
